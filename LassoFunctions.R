@@ -46,6 +46,9 @@ lasso <- function(Xtilde, Ytilde, beta, lambda){
 # beta_start - p vector, an optional starting point for coordinate-descent algorithm
 # eps - precision level for convergence assessment, default 0.001
 fitLASSOstandardized <- function(Xtilde, Ytilde, lambda, beta_start = NULL, eps = 0.001){
+  # Conver Xtilde to a matrix
+  Xtilde <- as.matrix(Xtilde)
+  
   #[ToDo]  Check that n is the same between Xtilde and Ytilde
   if (nrow(Xtilde) != length(Ytilde)) {
     stop("Xtilde must have number of rows equal to the length of Ytilde")
@@ -80,7 +83,7 @@ fitLASSOstandardized <- function(Xtilde, Ytilde, lambda, beta_start = NULL, eps 
     # Update each coordinate one at a time
     for(j in 1:p){
       beta[j] <- soft(
-        n^(-1) * crossprod(Xtilde[ , j], Ytilde - rowsum(Xtilde[ , -j] %*% beta_previous[-j])), lambda
+        n^(-1) * crossprod(Xtilde[ , j], Ytilde - rowSums(Xtilde[ , -j] %*% beta_previous[-j])), lambda
       )
     }
     
