@@ -68,6 +68,36 @@ fitLASSOstandardized <- function(Xtilde, Ytilde, lambda, beta_start = NULL, eps 
   # For example, if you have 3 iterations with objectives 3, 1, 0.99999,
   # your should return fmin = 0.99999, and not have another iteration
   
+  # Initialize starting points
+  beta <- beta_start
+  beta_previous <- beta_start
+  fprevious <- lasso(Xtilde, Ytilde, beta, lambda)
+  p <- ncol(Xtilde)
+  n <- nrow(Xtilde)
+  
+  # Start loop, break at end if difference between new and old is less than eps
+  while(TRUE){
+    # Update each coordinate one at a time
+    for(j in 1:p){
+      beta[j] <- soft(
+        n^(-1) * crossprod(Xtilde[ , j], Ytilde - rowsum(Xtilde[ , -j] %*% beta_previous[-j])), lambda
+      )
+    }
+    
+    
+    # Check break condition
+    fmin <- lasso(Xtilde, Ytilde, beta, lambda)
+    
+    if((fprevious - fmin) < eps) {
+      break
+    }
+    
+    # Update previous if no break is needed
+    fprevious <- fmin
+    beta_previous <- beta
+  }
+  
+  
   # Return 
   # beta - the solution (a vector)
   # fmin - optimal function value (value of objective at beta, scalar)
