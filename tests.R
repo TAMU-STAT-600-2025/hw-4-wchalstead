@@ -23,3 +23,22 @@ test_that(
     expect_equal(soft(-5, 7), 0)
     expect_equal(soft(5, 7), 0)
   })
+
+
+# Test fitting Lasso function
+# Fits between Lasso with lambda zero should be close to that given by LM
+set.seed(100)
+X <- matrix(rnorm(100 * 5, 10, 3), 100, 5)
+Y <- X %*% 1:5
+
+out <- standardizeXY(X, Y)
+lm(out$Ytilde ~ out$Xtilde - 1)
+fitLASSOstandardized(out$Xtilde, out$Ytilde, lambda = 0, eps = 1e-5)
+
+set.seed(100)
+X <- matrix(rnorm(100 * 5, 10, 3), 100, 5)
+Y <- X %*% c(6,3,4,2,10)
+
+out <- standardizeXY(X, Y)
+lm(out$Ytilde ~ out$Xtilde - 1)
+fitLASSOstandardized(out$Xtilde, out$Ytilde, lambda = 0, eps = 1e-5)
