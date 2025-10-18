@@ -136,7 +136,7 @@ fitLASSOstandardized_seq <- function(Xtilde, Ytilde, lambda_seq = NULL, n_lambda
   # If lambda_seq is not supplied, calculate lambda_max 
   # (the minimal value of lambda that gives zero solution),
   # and create a sequence of length n_lambda as
-    lambda_max <- max(abs(crossprod(X, Y)/n))
+    lambda_max <- max(abs(crossprod(Xtilde, Ytilde)/n))
     lambda_seq = exp(seq(log(lambda_max), log(0.01), length = n_lambda))
   }
   # [ToDo] Apply fitLASSOstandardized going from largest to smallest lambda 

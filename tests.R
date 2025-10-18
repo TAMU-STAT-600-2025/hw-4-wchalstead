@@ -42,3 +42,7 @@ Y <- X %*% c(6,3,4,2,10)
 out <- standardizeXY(X, Y)
 lm(out$Ytilde ~ out$Xtilde - 1)
 fitLASSOstandardized(out$Xtilde, out$Ytilde, lambda = 0, eps = 1e-5)
+
+# Test sequence function
+fitLASSOstandardized_seq(out$Xtilde, out$Ytilde)
+
