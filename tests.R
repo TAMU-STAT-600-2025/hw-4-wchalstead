@@ -46,3 +46,11 @@ fitLASSOstandardized(out$Xtilde, out$Ytilde, lambda = 0, eps = 1e-5)
 # Test sequence function
 fitLASSOstandardized_seq(out$Xtilde, out$Ytilde)
 
+# Test sequence function (unscaled)
+set.seed(100)
+X <- matrix(rnorm(100 * 5, 10, 3), 100, 5)
+Y <- X %*% c(6,3,4,2,10) + 1
+
+fitLASSO(X, Y)
+lm(Y ~ X)
+

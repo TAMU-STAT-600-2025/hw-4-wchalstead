@@ -179,8 +179,8 @@ fitLASSO <- function(X ,Y, lambda_seq = NULL, n_lambda = 60, eps = 0.001){
   LASSOStand <- fitLASSOstandardized_seq(Xtilde = Xtilde, Ytilde = Ytilde, lambda_seq = lambda_seq, n_lambda = n_lambda, eps = eps)
   # [ToDo] Perform back scaling and centering to get original intercept and coefficient vector
   # for each lambda
-  beta_mat <- LASSOStand$beta_mat * stand$weights
-  beta0_vec <- stand$Ymean - colSums(Xmeans * beta_mat)
+  beta_mat <- LASSOStand$beta_mat / stand$weights
+  beta0_vec <- stand$Ymean - colSums(beta_mat * stand$Xmeans)
   lambda_seq <- LASSOStand$lambda_seq
   # Return output
   # lambda_seq - the actual sequence of tuning parameters used
