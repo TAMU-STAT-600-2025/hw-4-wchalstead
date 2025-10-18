@@ -118,6 +118,7 @@ fitLASSOstandardized <- function(Xtilde, Ytilde, lambda, beta_start = NULL, eps 
 # eps - precision level for convergence assessment, default 0.001
 fitLASSOstandardized_seq <- function(Xtilde, Ytilde, lambda_seq = NULL, n_lambda = 60, eps = 0.001){
   p <- ncol(Xtilde)
+  n <- nrow(Xtilde)
   
   # [ToDo] Check that n is the same between Xtilde and Ytilde
   if (nrow(Xtilde) != length(Ytilde)) {
@@ -135,7 +136,8 @@ fitLASSOstandardized_seq <- function(Xtilde, Ytilde, lambda_seq = NULL, n_lambda
   # If lambda_seq is not supplied, calculate lambda_max 
   # (the minimal value of lambda that gives zero solution),
   # and create a sequence of length n_lambda as
-  lambda_seq = exp(seq(log(lambda_max), log(0.01), length = n_lambda))
+    lambda_max <- max(abs(crossprod(X, Y)/n))
+    lambda_seq = exp(seq(log(lambda_max), log(0.01), length = n_lambda))
   }
   # [ToDo] Apply fitLASSOstandardized going from largest to smallest lambda 
   # (make sure supplied eps is carried over). 
