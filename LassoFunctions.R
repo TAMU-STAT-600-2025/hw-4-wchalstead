@@ -196,21 +196,42 @@ fitLASSO <- function(X ,Y, lambda_seq = NULL, n_lambda = 60, eps = 0.001){
 # lambda_seq - sequence of tuning parameters, optional
 # n_lambda - length of desired tuning parameter sequence, is only used when the tuning sequence is not supplied by the user
 # k - number of folds for k-fold cross-validation, default is 5
-# fold_ids - (optional) vector of length n specifying the folds assignment (from 1 to max(folds_ids)), if supplied the value of k is ignored 
+# fold_ids - (optional) vector of length n specifying the folds assignment (from 1 to max(fold_ids)), if supplied the value of k is ignored 
 # eps - precision level for convergence assessment, default 0.001
 cvLASSO <- function(X ,Y, lambda_seq = NULL, n_lambda = 60, k = 5, fold_ids = NULL, eps = 0.001){
   # [ToDo] Fit Lasso on original data using fitLASSO
- 
+  LASSOfitWHOLE <- fitLASSO(X, Y, lambda_seq = lambda_seq, n_lambda = n_lambda, eps = eps)
+  lambda_seq <- LASSOfitWHOLE$lambda_seq
   # [ToDo] If fold_ids is NULL, split the data randomly into k folds.
   # If fold_ids is not NULL, split the data according to supplied fold_ids.
+  if (is.null(fold_ids)){
+  fold_ids <- sample(rep_len(1:k, nrow(X)))
+  } else {
+    k <- max(fold_ids)
+  }
+  
+  # Stop if k > n
+  if(k > nrow(X)) {
+    stop("Number of folds, k, must be less than or equal to the number of samples, n.")
+  }
   
   # [ToDo] Calculate LASSO on each fold using fitLASSO,
   # and perform any additional calculations needed for CV(lambda) and SE_CV(lambda)
-  
+  CV_mat <- matrix(0, ncol = length(lambda_seq), nrow = k)
+  for (fold in 1:k) {
+    foldfit <- LASSOfitWHOLE <- fitLASSO(X[fold_ids != fold, ], Y[fold_ids != fold], lambda_seq = lambda_seq, n_lambda = n_lambda, eps = eps)
+    CV_mat[k, ] <- colMeans(
+       (outer(Y[fold_ids == fold], foldfit$beta0_vec, '-') - apply(foldfit$beta_mat, 2, \(beta_i) {X[fold_ids == fold, ] %*% beta_i}))^2
+    )
+  }
   # [ToDo] Find lambda_min
-
+  cvm <- colMeans(CV_mat)
+  lambda_min <- lambda_seq[which.min(cvm)]
   # [ToDo] Find lambda_1SE
-  
+  cvse <- apply(CV_mat, 2, \(cv_i) {sd(cv_i)/sqrt(k)})
+  lambda_1se <- max(
+    lambda_seq[cvm <= min(cvm) + cvse[which.min(cvm)]]
+  )
   
   # Return output
   # Output from fitLASSO on the whole data
@@ -222,6 +243,8 @@ cvLASSO <- function(X ,Y, lambda_seq = NULL, n_lambda = 60, k = 5, fold_ids = NU
   # lambda_1se - selected lambda based on 1SE rule
   # cvm - values of CV(lambda) for each lambda
   # cvse - values of SE_CV(lambda) for each lambda
+  beta_mat <- LASSOfitWHOLE$beta_mat
+  beta0_vec <- LASSOfitWHOLE$beta0_vec
   return(list(lambda_seq = lambda_seq, beta_mat = beta_mat, beta0_vec = beta0_vec, fold_ids = fold_ids, lambda_min = lambda_min, lambda_1se = lambda_1se, cvm = cvm, cvse = cvse))
 }
 

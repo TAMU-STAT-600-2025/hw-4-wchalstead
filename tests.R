@@ -54,3 +54,12 @@ Y <- X %*% c(6,3,4,2,10) + 1
 fitLASSO(X, Y)
 lm(Y ~ X)
 
+cvLASSO(X, Y)
+
+# Test cvLASSO
+set.seed(100)
+X <- matrix(rnorm(20 * 50, 10, 3), 20, 50)
+Y <- X %*% rgeom(50, 0.75)
+
+
+cvLASSO(X, Y)
