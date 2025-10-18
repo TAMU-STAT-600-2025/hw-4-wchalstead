@@ -117,23 +117,41 @@ fitLASSOstandardized <- function(Xtilde, Ytilde, lambda, beta_start = NULL, eps 
 #             is only used when the tuning sequence is not supplied by the user
 # eps - precision level for convergence assessment, default 0.001
 fitLASSOstandardized_seq <- function(Xtilde, Ytilde, lambda_seq = NULL, n_lambda = 60, eps = 0.001){
+  p <- ncol(Xtilde)
+  
   # [ToDo] Check that n is the same between Xtilde and Ytilde
- 
+  if (nrow(Xtilde) != length(Ytilde)) {
+    stop("Xtilde must have number of rows equal to the length of Ytilde")
+  }
   # [ToDo] Check for the user-supplied lambda-seq (see below)
   # If lambda_seq is supplied, only keep values that are >= 0,
   # and make sure the values are sorted from largest to smallest.
   # If none of the supplied values satisfy the requirement,
   # print the warning message and proceed as if the values were not supplied.
-  
-  
+  if (!is.null(lambda_seq)) {
+    lambda_seq <- sort(lambda_seq[lambda_seq >= 0], decreasing = T)
+  }
+  if (length(lambda_seq) == 0) {
   # If lambda_seq is not supplied, calculate lambda_max 
   # (the minimal value of lambda that gives zero solution),
   # and create a sequence of length n_lambda as
   lambda_seq = exp(seq(log(lambda_max), log(0.01), length = n_lambda))
-  
+  }
   # [ToDo] Apply fitLASSOstandardized going from largest to smallest lambda 
   # (make sure supplied eps is carried over). 
   # Use warm starts strategy discussed in class for setting the starting values.
+  
+  # Initialize beta_mat and fmin_vec
+  beta_mat <- matrix(0, nrow = p, ncol = length(lambda_seq))
+  fmin_vec <- numeric(length(lambda_seq))
+  
+  for (j in 1:length(lambda_seq)) {
+    LASSOfit <- fitLASSOstandardized(Xtilde = Xtilde, Ytilde = Ytilde,
+                                     lambda = lambda_seq[j], beta_start = beta_mat[ , max(j - 1, 1)],
+                                     eps = eps)
+    beta_mat[ , j] <- LASSOfit$beta
+    fmin_vec[j] <- LASSOfit$fmin
+  }
   
   # Return output
   # lambda_seq - the actual sequence of tuning parameters used
