@@ -217,7 +217,7 @@ cvLASSO <- function(X ,Y, lambda_seq = NULL, n_lambda = 60, k = 5, fold_ids = NU
   # and perform any additional calculations needed for CV(lambda) and SE_CV(lambda)
   CV_mat <- matrix(0, ncol = length(lambda_seq), nrow = k)
   for (fold in 1:k) {
-    foldfit <- LASSOfitWHOLE <- fitLASSO(X[fold_ids != fold, ], Y[fold_ids != fold], lambda_seq = lambda_seq, n_lambda = n_lambda, eps = eps)
+    foldfit <- fitLASSO(X[fold_ids != fold, ], Y[fold_ids != fold], lambda_seq = lambda_seq, n_lambda = n_lambda, eps = eps)
     CV_mat[fold, ] <- colMeans(
        (outer(Y[fold_ids == fold], foldfit$beta0_vec, '-') - apply(foldfit$beta_mat, 2, \(beta_i) {X[fold_ids == fold, ] %*% beta_i}))^2
     )
