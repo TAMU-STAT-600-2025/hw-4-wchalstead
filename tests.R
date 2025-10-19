@@ -33,7 +33,7 @@ Y <- X %*% 1:5
 
 out <- standardizeXY(X, Y)
 lm(out$Ytilde ~ out$Xtilde - 1)
-fitLASSOstandardized(out$Xtilde, out$Ytilde, lambda = 0, eps = 1e-5)
+fitLASSOstandardized(out$Xtilde, out$Ytilde, lambda = 0, eps = 0.01)
 
 set.seed(100)
 X <- matrix(rnorm(100 * 5, 10, 3), 100, 5)
@@ -61,5 +61,36 @@ set.seed(100)
 X <- matrix(rnorm(20 * 50, 10, 3), 20, 50)
 Y <- X %*% rgeom(50, 0.75)
 
+scaled <- standardizeXY(X, Y)
+Xtilde <- scaled$Xtilde
+Ytilde <- scaled$Ytilde
+
+fit <- fitLASSOstandardized(Xtilde, Ytilde, 0.001)
+betas <- fit$beta
+for(i in 1:200) {
+  fit <- fitLASSOstandardized(Xtilde, Ytilde, 0.001, beta_start = betas)
+  betas <- fit$beta
+}
+betas
 
 cvLASSO(X, Y)
+
+
+
+
+#### Debugging
+LASSOfit <- fitLASSO(X, Y, n_lambda = 60)
+stand <- standardizeXY(X, Y)
+n <- nrow(X)
+lambda_max <- max(abs(crossprod(stand$Xtilde, stand$Ytilde)/n))
+
+exp(seq(log(lambda_max), log(0.01), length = 58))
+
+lasso(stand$Xtilde, stand$Ytilde, )
+
+fitLASSOstandardized(stand$Xtilde, stand$Ytilde, 0.01)
+
+
+plot(LASSOfit$beta_mat[1, ])
+plot(LASSOfit$beta_mat[10, ])
+

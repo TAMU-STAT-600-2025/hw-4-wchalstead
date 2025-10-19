@@ -37,7 +37,7 @@ soft <- function(a, lambda){
 lasso <- function(Xtilde, Ytilde, beta, lambda){
  n <- length(Ytilde)
  return(
-   (2 * n)^(-1) * sum((Ytilde - Xtilde %*% beta)^2) + lambda * sum(abs(beta))
+   sum(((Ytilde - Xtilde %*% beta) * (2 * n)^(-1/2) )^2) + lambda * sum(abs(beta))
  )
 }
 
@@ -75,31 +75,29 @@ fitLASSOstandardized <- function(Xtilde, Ytilde, lambda, beta_start = NULL, eps 
   
   # Initialize starting points
   beta <- beta_start
-  beta_previous <- beta_start
   fprevious <- lasso(Xtilde, Ytilde, beta, lambda)
   p <- ncol(Xtilde)
   n <- nrow(Xtilde)
+  resid <- Ytilde - Xtilde %*% beta
   
   # Start loop, break at end if difference between new and old is less than eps
   while(TRUE){
-    # Update each coordinate one at a time
-    for(j in 1:p){
-      beta[j] <- soft(
-        n^(-1) * crossprod(Xtilde[ , j], Ytilde - rowSums(Xtilde[ , -j] %*% beta_previous[-j])), lambda
-      )
+    beta_old <- beta
+    for (j in 1:p){
+      beta_old <- beta[j]
+      beta[j] <- soft((1 / n) * crossprod(Xtilde[ , j], resid + Xtilde[ , j] * beta[j]), lambda)
+      resid <- resid - Xtilde[, j] * (beta[j] - beta_old)
     }
-    
     
     # Check break condition
     fmin <- lasso(Xtilde, Ytilde, beta, lambda)
     
-    if((fprevious - fmin) < eps) {
+    if(abs(fprevious - fmin) < eps) {
       break
     }
     
     # Update previous if no break is needed
     fprevious <- fmin
-    beta_previous <- beta
   }
   
   
@@ -137,7 +135,7 @@ fitLASSOstandardized_seq <- function(Xtilde, Ytilde, lambda_seq = NULL, n_lambda
   # (the minimal value of lambda that gives zero solution),
   # and create a sequence of length n_lambda as
     lambda_max <- max(abs(crossprod(Xtilde, Ytilde)/n))
-    lambda_seq = exp(seq(log(lambda_max), log(0.01), length = n_lambda))
+    lambda_seq <- exp(seq(log(lambda_max), log(0.01), length = n_lambda))
   }
   # [ToDo] Apply fitLASSOstandardized going from largest to smallest lambda 
   # (make sure supplied eps is carried over). 
@@ -220,7 +218,7 @@ cvLASSO <- function(X ,Y, lambda_seq = NULL, n_lambda = 60, k = 5, fold_ids = NU
   CV_mat <- matrix(0, ncol = length(lambda_seq), nrow = k)
   for (fold in 1:k) {
     foldfit <- LASSOfitWHOLE <- fitLASSO(X[fold_ids != fold, ], Y[fold_ids != fold], lambda_seq = lambda_seq, n_lambda = n_lambda, eps = eps)
-    CV_mat[k, ] <- colMeans(
+    CV_mat[fold, ] <- colMeans(
        (outer(Y[fold_ids == fold], foldfit$beta0_vec, '-') - apply(foldfit$beta_mat, 2, \(beta_i) {X[fold_ids == fold, ] %*% beta_i}))^2
     )
   }
