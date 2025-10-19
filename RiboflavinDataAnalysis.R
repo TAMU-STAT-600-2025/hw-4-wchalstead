@@ -27,11 +27,11 @@ plot(LASSOfit$lambda_seq, (colSums(LASSOfit$beta_mat != 0) + (LASSOfit$beta0_vec
      ylab = 'Number of Non-Zero Beta Values')
 
 # [ToDo] Use microbenchmark 10 times to check the timing of your fitLASSO function above with 60 tuning parameters
-#bench::mark(fitLASSO(X, Y), iterations = 1, check = F) # This package was taking a really long time-- maybe due to memory collection, so I just used microbenchmark instead
 microbenchmark::microbenchmark(fitLASSO(X,Y), times = 10)
-
 # [ToDo] Report your median timing in the comments here: (~5.8 sec for Irina on her laptop)
 # My fitLASSO function had a median time of 6.450513 seconds
+
+
 # [ToDo] Use cvLASSO function on the riboflavin data with 30 tuning parameters (just 30 to make it faster)
 cvs <- cvLASSO(X, Y, n_lambda = 30)
 # [ToDo] Based on the above output, plot the value of CV(lambda) versus tuning parameter. Note that this will change with each run since the folds are random, this is ok.
